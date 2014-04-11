@@ -31,6 +31,9 @@ using System.Diagnostics;
 //using JSIL.Meta; ####
 using System.Runtime.CompilerServices;
 
+using Random = Missing.Random;
+using StopWatch = Missing.Stopwatch;
+
 namespace simpleray {
     public class Vector3f {
         public float x, y, z;
@@ -302,7 +305,7 @@ namespace simpleray {
         //[JSReplacement("document.getElementById('speed').innerHTML = $text")] ####
         [InlineCode("document.getElementById('speed').innerHTML = {text}")]
         static void WriteSpeedText (string text) {
-          Debug.WriteLine(text);
+          // Debug.WriteLine(text);
         }
         
         //[JSReplacement("setTimeout($action, $timeoutMs)")] ####

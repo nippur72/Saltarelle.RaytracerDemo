@@ -51,7 +51,7 @@ namespace System.Drawing
        private int height;
 
        private CanvasElement canvas;
-       private CanvasContext2D context;
+       private CanvasRenderingContext2D context; // ### it was: CanvasContext2D
        private ImageData imagedata;
                 
        public Bitmap(int w, int h)
@@ -60,18 +60,18 @@ namespace System.Drawing
            height = h;
 
            canvas = (CanvasElement) Document.GetElementById("canvas");
-           context = (CanvasContext2D) canvas.GetContext(Rendering.Render2D); // "2d"    
-           context.CompositeOperation = CompositeOperation.Copy;           
+           context = (CanvasRenderingContext2D) canvas.GetContext(CanvasContextId.Render2D); // "2d"    
+           context.GlobalCompositeOperation = CompositeOperation.Copy;  // ### it was: CompositeOperation         
            imagedata = context.CreateImageData(w,1);  // w,h
        }
 
        public void SetPixel(int x, int y, Color c)
        {           
            int index = x * 4;
-           imagedata.Data[index + 0] = c.R;
-           imagedata.Data[index + 1] = c.G;
-           imagedata.Data[index + 2] = c.B;
-           imagedata.Data[index + 3] = c.A;           
+           imagedata.Data[index + 0] = (byte) c.R;
+           imagedata.Data[index + 1] = (byte) c.G;
+           imagedata.Data[index + 2] = (byte) c.B;
+           imagedata.Data[index + 3] = (byte) c.A;           
            //context.PutImageData(imagedata, x, y); 
            if(x==width-1) context.PutImageData(imagedata, 0, y); 
        }
@@ -84,7 +84,7 @@ namespace System.Drawing
 }
 
 
-namespace System
+namespace Missing
 {
    public class Stopwatch
    {
@@ -131,7 +131,7 @@ namespace System
 }
     
 
-namespace System
+namespace Missing
 {
    [Imported]
    public class MersenneTwister
@@ -147,7 +147,7 @@ namespace System
            return 0;
         }
    }
-
+   
    public class Random
    {
       MersenneTwister mt;
@@ -173,6 +173,6 @@ namespace System
       {
           return 0;
       }
-   }
+   }    
 }
 

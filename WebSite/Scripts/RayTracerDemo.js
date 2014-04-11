@@ -1,4 +1,26 @@
 ﻿(function() {
+	'use strict';
+	var $asm = {};
+	global.Missing = global.Missing || {};
+	global.simpleray = global.simpleray || {};
+	global.System = global.System || {};
+	global.System.Drawing = global.System.Drawing || {};
+	ss.initAssembly($asm, 'RayTracerDemo');
+	////////////////////////////////////////////////////////////////////////////////
+	// Missing.Random
+	var $Missing_Random = function(seed) {
+		this.$mt = null;
+		this.$mt = new MersenneTwister(seed);
+	};
+	$Missing_Random.__typeName = 'Missing.Random';
+	global.Missing.Random = $Missing_Random;
+	////////////////////////////////////////////////////////////////////////////////
+	// Missing.Stopwatch
+	var $Missing_Stopwatch = function() {
+		this.$start_time = 0;
+	};
+	$Missing_Stopwatch.__typeName = 'Missing.Stopwatch';
+	global.Missing.Stopwatch = $Missing_Stopwatch;
 	////////////////////////////////////////////////////////////////////////////////
 	// simpleray.Plane
 	var $simpleray_$Plane = function(n, d, c) {
@@ -9,37 +31,18 @@
 		this.$distance = d;
 		this.color = c;
 	};
-	$simpleray_$Plane.prototype = {
-		intersect: function(ray) {
-			var normalDotRayDir = this.$normal.dot(ray.direction);
-			if (normalDotRayDir === 0) {
-				return -1;
-			}
-			// Any none-parallel ray will hit the plane at some point - the question now is just
-			// if it in the positive or negative ray direction.
-			var hitDistance = -(this.$normal.dot(ray.origin) - this.$distance) / normalDotRayDir;
-			if (hitDistance < 0) {
-				return -1;
-			}
-			else {
-				return hitDistance;
-			}
-		},
-		getSurfaceNormalAtPoint: function(p) {
-			return this.$normal;
-			// This is of course the same across the entire plane
-		}
-	};
+	$simpleray_$Plane.__typeName = 'simpleray.$Plane';
 	////////////////////////////////////////////////////////////////////////////////
 	// simpleray.RayTracer
 	var $simpleray_$RayTracer = function() {
 	};
+	$simpleray_$RayTracer.__typeName = 'simpleray.$RayTracer';
 	$simpleray_$RayTracer.$main = function() {
 		// init structures
 		$simpleray_$RayTracer.$objects = [];
 		$simpleray_$RayTracer.$lights = [];
-		$simpleray_$RayTracer.$random = new $System_Random(1478650229);
-		$simpleray_$RayTracer.$stopwatch = new $System_Stopwatch();
+		$simpleray_$RayTracer.$random = new $Missing_Random(1478650229);
+		$simpleray_$RayTracer.$stopwatch = new ss.Stopwatch();
 		$simpleray_$RayTracer.$speedSamples = [];
 		var canvas = new $System_Drawing_Bitmap($simpleray_$RayTracer.$canvaS_WIDTH, $simpleray_$RayTracer.$canvaS_HEIGHT);
 		// add some objects
@@ -85,7 +88,7 @@
 			canvas.setPixel(x, y, c);
 		}
 		//canvas.Refresh(); // added for make it work with Saltarelle
-		var elapsed = $simpleray_$RayTracer.$stopwatch.get_elapsedMilliseconds();
+		var elapsed = $simpleray_$RayTracer.$stopwatch.milliseconds();
 		var msPerPixel = elapsed / 640;
 		$simpleray_$RayTracer.$reportSpeed(msPerPixel);
 		setTimeout(function() {
@@ -227,7 +230,160 @@
 		this.$radius = r;
 		this.color = c;
 	};
-	$simpleray_$Sphere.prototype = {
+	$simpleray_$Sphere.__typeName = 'simpleray.$Sphere';
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Light
+	var $simpleray_Light = function(p) {
+		this.position = null;
+		this.position = p;
+	};
+	$simpleray_Light.__typeName = 'simpleray.Light';
+	global.simpleray.Light = $simpleray_Light;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Ray
+	var $simpleray_Ray = function(o, d) {
+		this.origin = null;
+		this.direction = null;
+		this.closestHitObject = null;
+		this.closestHitDistance = 0;
+		this.hitPoint = null;
+		this.origin = o;
+		this.direction = d;
+		this.closestHitDistance = $simpleray_Ray.worlD_MAX;
+		this.closestHitObject = null;
+	};
+	$simpleray_Ray.__typeName = 'simpleray.Ray';
+	global.simpleray.Ray = $simpleray_Ray;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.RTObject
+	var $simpleray_RTObject = function() {
+		this.color = null;
+	};
+	$simpleray_RTObject.__typeName = 'simpleray.RTObject';
+	global.simpleray.RTObject = $simpleray_RTObject;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Vector3f
+	var $simpleray_Vector3f = function(x, y, z) {
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	};
+	$simpleray_Vector3f.__typeName = 'simpleray.Vector3f';
+	$simpleray_Vector3f.op_Subtraction = function(a, b) {
+		return new $simpleray_Vector3f(a.x - b.x, a.y - b.y, a.z - b.z);
+	};
+	$simpleray_Vector3f.op_UnaryNegation = function(a) {
+		return new $simpleray_Vector3f(-a.x, -a.y, -a.z);
+	};
+	$simpleray_Vector3f.op_Multiply = function(a, b) {
+		return new $simpleray_Vector3f(a.x * b, a.y * b, a.z * b);
+	};
+	$simpleray_Vector3f.op_Division = function(a, b) {
+		return new $simpleray_Vector3f(a.x / b, a.y / b, a.z / b);
+	};
+	$simpleray_Vector3f.op_Addition = function(a, b) {
+		return new $simpleray_Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
+	};
+	global.simpleray.Vector3f = $simpleray_Vector3f;
+	////////////////////////////////////////////////////////////////////////////////
+	// System.Color
+	var $System_Color = function(a, r, g, b) {
+		this.r = 0;
+		this.g = 0;
+		this.b = 0;
+		this.a = 0;
+		this.a = a;
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	};
+	$System_Color.__typeName = 'System.Color';
+	$System_Color.get_blueViolet = function() {
+		return new $System_Color(255, 138, 43, 226);
+		// #FF8A2BE2
+	};
+	$System_Color.get_aquamarine = function() {
+		return new $System_Color(255, 127, 255, 212);
+		// #FF7FFFD4
+	};
+	$System_Color.fromArgb = function(a, r, g, b) {
+		return new $System_Color(a, r, g, b);
+	};
+	global.System.Color = $System_Color;
+	////////////////////////////////////////////////////////////////////////////////
+	// System.Console
+	var $System_Console = function() {
+	};
+	$System_Console.__typeName = 'System.Console';
+	$System_Console.writeLine = function(msg) {
+		document.getElementById('log').innerHTML += msg + '<br>';
+	};
+	global.System.Console = $System_Console;
+	////////////////////////////////////////////////////////////////////////////////
+	// System.Drawing.Bitmap
+	var $System_Drawing_Bitmap = function(w, h) {
+		this.$width = 0;
+		this.$height = 0;
+		this.$canvas = null;
+		this.$context = null;
+		this.$imagedata = null;
+		this.$width = w;
+		this.$height = h;
+		var $t1 = document.getElementById('canvas');
+		this.$canvas = ss.cast($t1, ss.isValue($t1) && (ss.isInstanceOfType($t1, Element) && $t1.tagName === 'CANVAS'));
+		this.$context = ss.cast(this.$canvas.getContext('2d'), CanvasRenderingContext2D);
+		// "2d"    
+		this.$context.globalCompositeOperation = 'copy';
+		// ### it was: CompositeOperation         
+		this.$imagedata = this.$context.createImageData(w, 1);
+		// w,h
+	};
+	$System_Drawing_Bitmap.__typeName = 'System.Drawing.Bitmap';
+	global.System.Drawing.Bitmap = $System_Drawing_Bitmap;
+	ss.initClass($Missing_Random, $asm, {
+		nextDouble: function() {
+			return this.$mt.genrand_real1();
+		},
+		next: function(maxValue) {
+			var real = this.$mt.genrand_real1();
+			return Math.floor(real * maxValue);
+		}
+	});
+	ss.initClass($Missing_Stopwatch, $asm, {
+		restart: function() {
+			this.$start_time = (new Date()).getTime();
+		},
+		get_elapsedMilliseconds: function() {
+			return (new Date()).getTime() - this.$start_time;
+		}
+	});
+	ss.initClass($simpleray_RTObject, $asm, { intersect: null, getSurfaceNormalAtPoint: null });
+	ss.initClass($simpleray_$Plane, $asm, {
+		intersect: function(ray) {
+			var normalDotRayDir = this.$normal.dot(ray.direction);
+			if (normalDotRayDir === 0) {
+				return -1;
+			}
+			// Any none-parallel ray will hit the plane at some point - the question now is just
+			// if it in the positive or negative ray direction.
+			var hitDistance = -(this.$normal.dot(ray.origin) - this.$distance) / normalDotRayDir;
+			if (hitDistance < 0) {
+				return -1;
+			}
+			else {
+				return hitDistance;
+			}
+		},
+		getSurfaceNormalAtPoint: function(p) {
+			return this.$normal;
+			// This is of course the same across the entire plane
+		}
+	}, $simpleray_RTObject);
+	ss.initClass($simpleray_$RayTracer, $asm, {});
+	ss.initClass($simpleray_$Sphere, $asm, {
 		intersect: function(ray) {
 			var lightFromOrigin = $simpleray_Vector3f.op_Subtraction(this.$position, ray.origin);
 			// dir from origin to us
@@ -251,43 +407,10 @@
 			normal.normalise();
 			return normal;
 		}
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Light
-	var $simpleray_Light = function(p) {
-		this.position = null;
-		this.position = p;
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Ray
-	var $simpleray_Ray = function(o, d) {
-		this.origin = null;
-		this.direction = null;
-		this.closestHitObject = null;
-		this.closestHitDistance = 0;
-		this.hitPoint = null;
-		this.origin = o;
-		this.direction = d;
-		this.closestHitDistance = $simpleray_Ray.worlD_MAX;
-		this.closestHitObject = null;
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.RTObject
-	var $simpleray_RTObject = function() {
-		this.color = null;
-	};
-	$simpleray_RTObject.prototype = { intersect: null, getSurfaceNormalAtPoint: null };
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Vector3f
-	var $simpleray_Vector3f = function(x, y, z) {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	};
-	$simpleray_Vector3f.prototype = {
+	}, $simpleray_RTObject);
+	ss.initClass($simpleray_Light, $asm, {});
+	ss.initClass($simpleray_Ray, $asm, {});
+	ss.initClass($simpleray_Vector3f, $asm, {
 		dot: function(b) {
 			return this.x * b.x + this.y * b.y + this.z * b.z;
 		},
@@ -305,98 +428,10 @@
 			var reflectedDir = $simpleray_Vector3f.op_Subtraction($simpleray_Vector3f.op_Multiply(normal, 2 * negVector.dot(normal)), negVector);
 			return reflectedDir;
 		}
-	};
-	$simpleray_Vector3f.op_Subtraction = function(a, b) {
-		return new $simpleray_Vector3f(a.x - b.x, a.y - b.y, a.z - b.z);
-	};
-	$simpleray_Vector3f.op_UnaryNegation = function(a) {
-		return new $simpleray_Vector3f(-a.x, -a.y, -a.z);
-	};
-	$simpleray_Vector3f.op_Multiply = function(a, b) {
-		return new $simpleray_Vector3f(a.x * b, a.y * b, a.z * b);
-	};
-	$simpleray_Vector3f.op_Division = function(a, b) {
-		return new $simpleray_Vector3f(a.x / b, a.y / b, a.z / b);
-	};
-	$simpleray_Vector3f.op_Addition = function(a, b) {
-		return new $simpleray_Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Color
-	var $System_Color = function(a, r, g, b) {
-		this.r = 0;
-		this.g = 0;
-		this.b = 0;
-		this.a = 0;
-		this.a = a;
-		this.r = r;
-		this.g = g;
-		this.b = b;
-	};
-	$System_Color.get_blueViolet = function() {
-		return new $System_Color(255, 138, 43, 226);
-		// #FF8A2BE2
-	};
-	$System_Color.get_aquamarine = function() {
-		return new $System_Color(255, 127, 255, 212);
-		// #FF7FFFD4
-	};
-	$System_Color.fromArgb = function(a, r, g, b) {
-		return new $System_Color(a, r, g, b);
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Console
-	var $System_Console = function() {
-	};
-	$System_Console.writeLine = function(msg) {
-		document.getElementById('log').innerHTML += msg + '<br>';
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Random
-	var $System_Random = function(seed) {
-		this.$mt = null;
-		this.$mt = new MersenneTwister(seed);
-	};
-	$System_Random.prototype = {
-		nextDouble: function() {
-			return this.$mt.genrand_real1();
-		},
-		next: function(maxValue) {
-			var real = this.$mt.genrand_real1();
-			return Math.floor(real * maxValue);
-		}
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Stopwatch
-	var $System_Stopwatch = function() {
-		this.$start_time = 0;
-	};
-	$System_Stopwatch.prototype = {
-		restart: function() {
-			this.$start_time = (new Date()).getTime();
-		},
-		get_elapsedMilliseconds: function() {
-			return (new Date()).getTime() - this.$start_time;
-		}
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Drawing.Bitmap
-	var $System_Drawing_Bitmap = function(w, h) {
-		this.$width = 0;
-		this.$height = 0;
-		this.$canvas = null;
-		this.$context = null;
-		this.$imagedata = null;
-		this.$width = w;
-		this.$height = h;
-		this.$canvas = document.getElementById('canvas');
-		this.$context = this.$canvas.getContext('2d');
-		// "2d"    
-		this.$context.globalCompositeOperation = 'copy';
-		this.$imagedata = this.$context.createImageData(w, 1);
-		// w,h
-	};
-	$System_Drawing_Bitmap.prototype = {
+	});
+	ss.initClass($System_Color, $asm, {});
+	ss.initClass($System_Console, $asm, {});
+	ss.initClass($System_Drawing_Bitmap, $asm, {
 		setPixel: function(x, y, c) {
 			var index = x * 4;
 			this.$imagedata.data[index + 0] = c.r;
@@ -411,19 +446,7 @@
 		save: function(filename) {
 			// ignored
 		}
-	};
-	ss.registerClass(global, 'simpleray.RTObject', $simpleray_RTObject);
-	ss.registerClass(null, 'simpleray.$Plane', $simpleray_$Plane, $simpleray_RTObject);
-	ss.registerClass(null, 'simpleray.$RayTracer', $simpleray_$RayTracer);
-	ss.registerClass(null, 'simpleray.$Sphere', $simpleray_$Sphere, $simpleray_RTObject);
-	ss.registerClass(global, 'simpleray.Light', $simpleray_Light);
-	ss.registerClass(global, 'simpleray.Ray', $simpleray_Ray);
-	ss.registerClass(global, 'simpleray.Vector3f', $simpleray_Vector3f);
-	ss.registerClass(global, 'System.Color', $System_Color);
-	ss.registerClass(global, 'System.Console', $System_Console);
-	ss.registerClass(global, 'System.Random', $System_Random);
-	ss.registerClass(global, 'System.Stopwatch', $System_Stopwatch);
-	ss.registerClass(global, 'System.Drawing.Bitmap', $System_Drawing_Bitmap);
+	});
 	$simpleray_Ray.worlD_MAX = 1000;
 	$simpleray_$RayTracer.$PI = 3.14159274101257;
 	$simpleray_$RayTracer.$pI_X_2 = 6.28318548202515;
@@ -447,7 +470,7 @@
 	$simpleray_$RayTracer.$random = null;
 	$simpleray_$RayTracer.$stopwatch = null;
 	$simpleray_$RayTracer.$minSpeed = Number.MAX_VALUE;
-	$simpleray_$RayTracer.$maxSpeed = Number.MIN_VALUE;
+	$simpleray_$RayTracer.$maxSpeed = -Number.MAX_VALUE;
 	$simpleray_$RayTracer.$speedSamples = null;
 	$simpleray_$RayTracer.$main();
 })();
