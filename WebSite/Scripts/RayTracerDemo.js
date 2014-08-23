@@ -1,171 +1,153 @@
 ﻿(function() {
 	'use strict';
 	var $asm = {};
-	global.Missing = global.Missing || {};
-	global.simpleray = global.simpleray || {};
-	global.System = global.System || {};
-	global.System.Drawing = global.System.Drawing || {};
 	ss.initAssembly($asm, 'RayTracerDemo');
 	////////////////////////////////////////////////////////////////////////////////
-	// Missing.Random
-	var $Missing_Random = function(seed) {
-		this.$mt = null;
-		this.$mt = new MersenneTwister(seed);
-	};
-	$Missing_Random.__typeName = 'Missing.Random';
-	global.Missing.Random = $Missing_Random;
-	////////////////////////////////////////////////////////////////////////////////
-	// Missing.Stopwatch
-	var $Missing_Stopwatch = function() {
-		this.$start_time = 0;
-	};
-	$Missing_Stopwatch.__typeName = 'Missing.Stopwatch';
-	global.Missing.Stopwatch = $Missing_Stopwatch;
-	////////////////////////////////////////////////////////////////////////////////
 	// simpleray.Plane
-	var $simpleray_$Plane = function(n, d, c) {
+	var $$Plane = function(n, d, c) {
 		this.$normal = null;
 		this.$distance = 0;
-		$simpleray_RTObject.call(this);
+		$RTObject.call(this);
 		this.$normal = n;
 		this.$distance = d;
 		this.color = c;
 	};
-	$simpleray_$Plane.__typeName = 'simpleray.$Plane';
+	$$Plane.__typeName = '$Plane';
 	////////////////////////////////////////////////////////////////////////////////
 	// simpleray.RayTracer
-	var $simpleray_$RayTracer = function() {
+	var $$RayTracer = function() {
 	};
-	$simpleray_$RayTracer.__typeName = 'simpleray.$RayTracer';
-	$simpleray_$RayTracer.$main = function() {
+	$$RayTracer.__typeName = '$RayTracer';
+	$$RayTracer.$main = function() {
 		// init structures
-		$simpleray_$RayTracer.$objects = [];
-		$simpleray_$RayTracer.$lights = [];
-		$simpleray_$RayTracer.$random = new $Missing_Random(1478650229);
-		$simpleray_$RayTracer.$stopwatch = new ss.Stopwatch();
-		$simpleray_$RayTracer.$speedSamples = [];
-		var canvas = new $System_Drawing_Bitmap($simpleray_$RayTracer.$canvaS_WIDTH, $simpleray_$RayTracer.$canvaS_HEIGHT);
+		$$RayTracer.$objects = [];
+		$$RayTracer.$lights = [];
+		$$RayTracer.$random = new $Random(1478650229);
+		$$RayTracer.$stopwatch = new ss.Stopwatch();
+		$$RayTracer.$speedSamples = [];
+		var canvas = new $Bitmap($$RayTracer.$canvaS_WIDTH, $$RayTracer.$canvaS_HEIGHT);
 		// add some objects
-		for (var i = 0; i < 30; i++) {
-			var x = $simpleray_$RayTracer.$random.nextDouble() * 10 - 5;
+		// in the original test it was 30 and not 300
+		for (var i = 0; i < 300; i++) {
+			var x = $$RayTracer.$random.nextDouble() * 10 - 5;
 			// Range -5 to 5
-			var y = $simpleray_$RayTracer.$random.nextDouble() * 10 - 5;
+			var y = $$RayTracer.$random.nextDouble() * 10 - 5;
 			// Range -5 to 5
-			var z = $simpleray_$RayTracer.$random.nextDouble() * 10;
+			var z = $$RayTracer.$random.nextDouble() * 10;
 			// Range 0 to 10
-			var c = $System_Color.fromArgb(255, $simpleray_$RayTracer.$random.next(255), $simpleray_$RayTracer.$random.next(255), $simpleray_$RayTracer.$random.next(255));
-			var s = new $simpleray_$Sphere(new $simpleray_Vector3f(x, y, z), $simpleray_$RayTracer.$random.nextDouble(), c);
-			ss.add($simpleray_$RayTracer.$objects, s);
+			var c = $Color.fromArgb(255, $$RayTracer.$random.next(255), $$RayTracer.$random.next(255), $$RayTracer.$random.next(255));
+			var s = new $$Sphere(new $Vector3f(x, y, z), $$RayTracer.$random.nextDouble(), c);
+			ss.add($$RayTracer.$objects, s);
 		}
 		//Sphere debugSphere = new Sphere(new Vector3f(0, 0, 5.0f), 0.2f, Color.ForestGreen);
 		//objects.Add(debugSphere);
-		var floor = new $simpleray_$Plane(new $simpleray_Vector3f(0, 1, 0), -10, $System_Color.get_aquamarine());
-		ss.add($simpleray_$RayTracer.$objects, floor);
+		var floor = new $$Plane(new $Vector3f(0, 1, 0), -10, $Color.get_aquamarine());
+		ss.add($$RayTracer.$objects, floor);
 		// add some lights
-		ss.add($simpleray_$RayTracer.$lights, new $simpleray_Light(new $simpleray_Vector3f(2, 0, 0)));
-		ss.add($simpleray_$RayTracer.$lights, new $simpleray_Light(new $simpleray_Vector3f(0, 10, 7.5)));
+		ss.add($$RayTracer.$lights, new $Light(new $Vector3f(2, 0, 0)));
+		ss.add($$RayTracer.$lights, new $Light(new $Vector3f(0, 10, 7.5)));
 		// calculate width and height of a pixel in world space coords
-		$simpleray_$RayTracer.$pixelWidth = ($simpleray_$RayTracer.$screenBottomRightPos.x - $simpleray_$RayTracer.$screenTopLeftPos.x) / 640;
-		$simpleray_$RayTracer.$pixelHeight = ($simpleray_$RayTracer.$screenTopLeftPos.y - $simpleray_$RayTracer.$screenBottomRightPos.y) / 480;
+		$$RayTracer.$pixelWidth = ($$RayTracer.$screenBottomRightPos.x - $$RayTracer.$screenTopLeftPos.x) / 640;
+		$$RayTracer.$pixelHeight = ($$RayTracer.$screenTopLeftPos.y - $$RayTracer.$screenBottomRightPos.y) / 480;
 		// render it
 		var dotPeriod = 48;
-		$System_Console.writeLine('Rendering...\n');
-		$System_Console.writeLine('|0%---100%|');
-		$simpleray_$RayTracer.$renderRow(canvas, dotPeriod, 0);
+		$Console.writeLine('Rendering...\n');
+		$Console.writeLine('|0%---100%|');
+		$$RayTracer.$renderRow(canvas, dotPeriod, 0);
 		// save the pretties
 		canvas.save('output.png');
 	};
-	$simpleray_$RayTracer.$renderRow = function(canvas, dotPeriod, y) {
-		if (y >= $simpleray_$RayTracer.$canvaS_HEIGHT) {
+	$$RayTracer.$renderRow = function(canvas, dotPeriod, y) {
+		if (y >= $$RayTracer.$canvaS_HEIGHT) {
 			return;
 		}
 		if (y % dotPeriod === 0) {
 			document.getElementById('log').innerHTML += '*';
 		}
-		$simpleray_$RayTracer.$stopwatch.restart();
-		for (var x = 0; x < $simpleray_$RayTracer.$canvaS_WIDTH; x++) {
-			var c = $simpleray_$RayTracer.$renderPixel(x, y);
+		$$RayTracer.$stopwatch.restart();
+		for (var x = 0; x < $$RayTracer.$canvaS_WIDTH; x++) {
+			var c = $$RayTracer.$renderPixel(x, y);
 			canvas.setPixel(x, y, c);
 		}
 		//canvas.Refresh(); // added for make it work with Saltarelle
-		var elapsed = $simpleray_$RayTracer.$stopwatch.milliseconds();
+		var elapsed = $$RayTracer.$stopwatch.milliseconds();
 		var msPerPixel = elapsed / 640;
-		$simpleray_$RayTracer.$reportSpeed(msPerPixel);
+		$$RayTracer.$totalTime += elapsed;
+		$$RayTracer.$reportSpeed(msPerPixel);
 		setTimeout(function() {
-			$simpleray_$RayTracer.$renderRow(canvas, dotPeriod, y + 1);
+			$$RayTracer.$renderRow(canvas, dotPeriod, y + 1);
 		}, 0);
 	};
-	$simpleray_$RayTracer.$reportSpeed = function(msPerPixel) {
-		$simpleray_$RayTracer.$minSpeed = Math.min(msPerPixel, $simpleray_$RayTracer.$minSpeed);
-		$simpleray_$RayTracer.$maxSpeed = Math.max(msPerPixel, $simpleray_$RayTracer.$maxSpeed);
-		ss.add($simpleray_$RayTracer.$speedSamples, msPerPixel);
+	$$RayTracer.$reportSpeed = function(msPerPixel) {
+		$$RayTracer.$minSpeed = Math.min(msPerPixel, $$RayTracer.$minSpeed);
+		$$RayTracer.$maxSpeed = Math.max(msPerPixel, $$RayTracer.$maxSpeed);
+		ss.add($$RayTracer.$speedSamples, msPerPixel);
 		var average = 0;
-		for (var $t1 = 0; $t1 < $simpleray_$RayTracer.$speedSamples.length; $t1++) {
-			var d = $simpleray_$RayTracer.$speedSamples[$t1];
+		for (var $t1 = 0; $t1 < $$RayTracer.$speedSamples.length; $t1++) {
+			var d = $$RayTracer.$speedSamples[$t1];
 			average += d;
 		}
-		average /= $simpleray_$RayTracer.$speedSamples.length;
-		document.getElementById('speed').innerHTML = ss.formatString('min: {0:F3} ms/pixel, max: {1:F3} ms/pixel, avg: {2:F3} ms/pixel', $simpleray_$RayTracer.$minSpeed, $simpleray_$RayTracer.$maxSpeed, average);
+		average /= $$RayTracer.$speedSamples.length;
+		document.getElementById('speed').innerHTML = ss.formatString('min: {0} ms/pixel, max: {1} ms/pixel, avg: {2} ms/pixel, total: {3} ms', $$RayTracer.$minSpeed, $$RayTracer.$maxSpeed, average, $$RayTracer.$totalTime);
 	};
-	$simpleray_$RayTracer.$checkIntersection = function(ray) {
-		for (var $t1 = 0; $t1 < $simpleray_$RayTracer.$objects.length; $t1++) {
-			var obj = $simpleray_$RayTracer.$objects[$t1];
+	$$RayTracer.$checkIntersection = function(ray) {
+		for (var $t1 = 0; $t1 < $$RayTracer.$objects.length; $t1++) {
+			var obj = $$RayTracer.$objects[$t1];
 			// loop through objects, test for intersection
-			var hitDistance = obj.intersect(ray.$);
+			var hitDistance = obj.intersect(ray);
 			// check for intersection with this object and find distance
-			if (hitDistance < ray.$.closestHitDistance && hitDistance > 0) {
-				ray.$.closestHitObject = obj;
+			if (hitDistance < ray.closestHitDistance && hitDistance > 0) {
+				ray.closestHitObject = obj;
 				// object hit and closest yet found - store it
-				ray.$.closestHitDistance = hitDistance;
+				ray.closestHitDistance = hitDistance;
 			}
 		}
-		ray.$.hitPoint = $simpleray_Vector3f.op_Addition(ray.$.origin, $simpleray_Vector3f.op_Multiply(ray.$.direction, ray.$.closestHitDistance));
+		ray.hitPoint = $Vector3f.op_Addition(ray.origin, $Vector3f.op_Multiply(ray.direction, ray.closestHitDistance));
 		// also store the point of intersection 
 	};
-	$simpleray_$RayTracer.$renderPixel = function(x, y) {
+	$$RayTracer.$renderPixel = function(x, y) {
 		// First, calculate direction of the current pixel from eye position
-		var sx = $simpleray_$RayTracer.$screenTopLeftPos.x + x * $simpleray_$RayTracer.$pixelWidth;
-		var sy = $simpleray_$RayTracer.$screenTopLeftPos.y - y * $simpleray_$RayTracer.$pixelHeight;
-		var eyeToPixelDir = $simpleray_Vector3f.op_Subtraction(new $simpleray_Vector3f(sx, sy, 0), $simpleray_$RayTracer.$eyePos);
+		var sx = $$RayTracer.$screenTopLeftPos.x + x * $$RayTracer.$pixelWidth;
+		var sy = $$RayTracer.$screenTopLeftPos.y - y * $$RayTracer.$pixelHeight;
+		var eyeToPixelDir = $Vector3f.op_Subtraction(new $Vector3f(sx, sy, 0), $$RayTracer.$eyePos);
 		eyeToPixelDir.normalise();
 		// Set up primary (eye) ray
-		var ray = new $simpleray_Ray($simpleray_$RayTracer.$eyePos, eyeToPixelDir);
+		var ray = new $Ray($$RayTracer.$eyePos, eyeToPixelDir);
 		// And trace it!
-		return $simpleray_$RayTracer.$trace(ray, 0);
+		return $$RayTracer.$trace(ray, 0);
 	};
-	$simpleray_$RayTracer.$trace = function(ray, traceDepth) {
-		ray = { $: ray };
+	$$RayTracer.$trace = function(ray, traceDepth) {
 		// See if the ray intersected an object
-		$simpleray_$RayTracer.$checkIntersection(ray);
-		if (ray.$.closestHitDistance >= $simpleray_Ray.worlD_MAX || ss.isNullOrUndefined(ray.$.closestHitObject)) {
-			return $simpleray_$RayTracer.$bG_COLOR;
+		$$RayTracer.$checkIntersection(ray);
+		if (ray.closestHitDistance >= $Ray.worlD_MAX || ss.isNullOrUndefined(ray.closestHitObject)) {
+			return $$RayTracer.$bG_COLOR;
 		}
 		// Got a hit - set initial colour to ambient light
-		var r = 0.150000005960464 * ray.$.closestHitObject.color.r;
-		var g = 0.150000005960464 * ray.$.closestHitObject.color.g;
-		var b = 0.150000005960464 * ray.$.closestHitObject.color.b;
+		var r = 0.150000005960464 * ray.closestHitObject.color.r;
+		var g = 0.150000005960464 * ray.closestHitObject.color.g;
+		var b = 0.150000005960464 * ray.closestHitObject.color.b;
 		// Set up stuff we'll need for shading calcs
-		var surfaceNormal = ray.$.closestHitObject.getSurfaceNormalAtPoint(ray.$.hitPoint);
-		var viewerDir = $simpleray_Vector3f.op_UnaryNegation(ray.$.direction);
+		var surfaceNormal = ray.closestHitObject.getSurfaceNormalAtPoint(ray.hitPoint);
+		var viewerDir = $Vector3f.op_UnaryNegation(ray.direction);
 		// Direction back to the viewer (simply negative of ray dir)
 		// Loop through the lights, adding contribution of each
-		for (var $t1 = 0; $t1 < $simpleray_$RayTracer.$lights.length; $t1++) {
-			var light = $simpleray_$RayTracer.$lights[$t1];
-			var lightDir = new $simpleray_Vector3f(0, 0, 0);
+		for (var $t1 = 0; $t1 < $$RayTracer.$lights.length; $t1++) {
+			var light = $$RayTracer.$lights[$t1];
+			var lightDir = new $Vector3f(0, 0, 0);
 			var lightDistance;
 			// Find light direction and distance
-			lightDir = $simpleray_Vector3f.op_Subtraction(light.position, ray.$.hitPoint);
+			lightDir = $Vector3f.op_Subtraction(light.position, ray.hitPoint);
 			// Get direction to light
 			lightDistance = lightDir.magnitude();
 			//lightDir = lightDir / lightDistance;                  // Light exponential falloff
 			lightDir.normalise();
 			// Shadow check: check if this light's visible from the point
 			// NB: Step out slightly from the hitpoint first
-			var shadowRay = { $: new $simpleray_Ray($simpleray_Vector3f.op_Addition(ray.$.hitPoint, $simpleray_Vector3f.op_Multiply(lightDir, $simpleray_$RayTracer.$TINY)), lightDir) };
-			shadowRay.$.closestHitDistance = lightDistance;
+			var shadowRay = new $Ray($Vector3f.op_Addition(ray.hitPoint, $Vector3f.op_Multiply(lightDir, $$RayTracer.$TINY)), lightDir);
+			shadowRay.closestHitDistance = lightDistance;
 			// IMPORTANT: We only want it to trace as far as the light!
-			$simpleray_$RayTracer.$checkIntersection(shadowRay);
-			if (ss.isValue(shadowRay.$.closestHitObject)) {
+			$$RayTracer.$checkIntersection(shadowRay);
+			if (ss.isValue(shadowRay.closestHitObject)) {
 				continue;
 			}
 			var cosLightAngleWithNormal = surfaceNormal.dot(lightDir);
@@ -177,36 +159,36 @@
 					continue;
 				}
 				// Add this light's diffuse contribution to our running totals
-				r += $simpleray_$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.$.closestHitObject.color.r;
-				g += $simpleray_$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.$.closestHitObject.color.g;
-				b += $simpleray_$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.$.closestHitObject.color.b;
+				r += $$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.closestHitObject.color.r;
+				g += $$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.closestHitObject.color.g;
+				b += $$RayTracer.$materiaL_DIFFUSE_COEFFICIENT * cosLightAngleWithNormal * ray.closestHitObject.color.b;
 			}
 			if (true) {
 				// Specular component - dot product of light's reflection vector and viewer direction
 				// Direction to the viewer is simply negative of the ray direction
-				var lightReflectionDir = $simpleray_Vector3f.op_Subtraction($simpleray_Vector3f.op_Multiply(surfaceNormal, cosLightAngleWithNormal * 2), lightDir);
+				var lightReflectionDir = $Vector3f.op_Subtraction($Vector3f.op_Multiply(surfaceNormal, cosLightAngleWithNormal * 2), lightDir);
 				var specularFactor = viewerDir.dot(lightReflectionDir);
 				if (specularFactor > 0) {
 					// To get smaller, sharper highlights we raise it to a power and multiply it
-					specularFactor = $simpleray_$RayTracer.$materiaL_SPECULAR_COEFFICIENT * Math.pow(specularFactor, 50);
+					specularFactor = $$RayTracer.$materiaL_SPECULAR_COEFFICIENT * Math.pow(specularFactor, 50);
 					// Add the specular contribution to our running totals
-					r += specularFactor * ray.$.closestHitObject.color.r;
-					g += specularFactor * ray.$.closestHitObject.color.g;
-					b += specularFactor * ray.$.closestHitObject.color.b;
+					r += specularFactor * ray.closestHitObject.color.r;
+					g += specularFactor * ray.closestHitObject.color.g;
+					b += specularFactor * ray.closestHitObject.color.b;
 				}
 			}
 		}
 		// Now do reflection, unless we're too deep
-		if (traceDepth < $simpleray_$RayTracer.$maX_DEPTH && true) {
+		if (traceDepth < $$RayTracer.$maX_DEPTH && true) {
 			// Set up the reflected ray - notice we move the origin out a tiny bit again
-			var reflectedDir = ray.$.direction.reflectIn(surfaceNormal);
-			var reflectionRay = new $simpleray_Ray($simpleray_Vector3f.op_Addition(ray.$.hitPoint, $simpleray_Vector3f.op_Multiply(reflectedDir, $simpleray_$RayTracer.$TINY)), reflectedDir);
+			var reflectedDir = ray.direction.reflectIn(surfaceNormal);
+			var reflectionRay = new $Ray($Vector3f.op_Addition(ray.hitPoint, $Vector3f.op_Multiply(reflectedDir, $$RayTracer.$TINY)), reflectedDir);
 			// And trace!
-			var reflectionCol = $simpleray_$RayTracer.$trace(reflectionRay, traceDepth + 1);
+			var reflectionCol = $$RayTracer.$trace(reflectionRay, traceDepth + 1);
 			// Add reflection results to running totals, scaling by reflect coeff.
-			r += $simpleray_$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.r;
-			g += $simpleray_$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.g;
-			b += $simpleray_$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.b;
+			r += $$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.r;
+			g += $$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.g;
+			b += $$RayTracer.$materiaL_REFLECTION_COEFFICIENT * reflectionCol.b;
 		}
 		// Clamp RGBs
 		if (r > 255) {
@@ -218,113 +200,22 @@
 		if (b > 255) {
 			b = 255;
 		}
-		return $System_Color.fromArgb(255, ss.Int32.trunc(r), ss.Int32.trunc(g), ss.Int32.trunc(b));
+		return $Color.fromArgb(255, ss.Int32.trunc(r), ss.Int32.trunc(g), ss.Int32.trunc(b));
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// simpleray.Sphere
-	var $simpleray_$Sphere = function(p, r, c) {
+	var $$Sphere = function(p, r, c) {
 		this.$position = null;
 		this.$radius = 0;
-		$simpleray_RTObject.call(this);
+		$RTObject.call(this);
 		this.$position = p;
 		this.$radius = r;
 		this.color = c;
 	};
-	$simpleray_$Sphere.__typeName = 'simpleray.$Sphere';
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Light
-	var $simpleray_Light = function(p) {
-		this.position = null;
-		this.position = p;
-	};
-	$simpleray_Light.__typeName = 'simpleray.Light';
-	global.simpleray.Light = $simpleray_Light;
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Ray
-	var $simpleray_Ray = function(o, d) {
-		this.origin = null;
-		this.direction = null;
-		this.closestHitObject = null;
-		this.closestHitDistance = 0;
-		this.hitPoint = null;
-		this.origin = o;
-		this.direction = d;
-		this.closestHitDistance = $simpleray_Ray.worlD_MAX;
-		this.closestHitObject = null;
-	};
-	$simpleray_Ray.__typeName = 'simpleray.Ray';
-	global.simpleray.Ray = $simpleray_Ray;
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.RTObject
-	var $simpleray_RTObject = function() {
-		this.color = null;
-	};
-	$simpleray_RTObject.__typeName = 'simpleray.RTObject';
-	global.simpleray.RTObject = $simpleray_RTObject;
-	////////////////////////////////////////////////////////////////////////////////
-	// simpleray.Vector3f
-	var $simpleray_Vector3f = function(x, y, z) {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	};
-	$simpleray_Vector3f.__typeName = 'simpleray.Vector3f';
-	$simpleray_Vector3f.op_Subtraction = function(a, b) {
-		return new $simpleray_Vector3f(a.x - b.x, a.y - b.y, a.z - b.z);
-	};
-	$simpleray_Vector3f.op_UnaryNegation = function(a) {
-		return new $simpleray_Vector3f(-a.x, -a.y, -a.z);
-	};
-	$simpleray_Vector3f.op_Multiply = function(a, b) {
-		return new $simpleray_Vector3f(a.x * b, a.y * b, a.z * b);
-	};
-	$simpleray_Vector3f.op_Division = function(a, b) {
-		return new $simpleray_Vector3f(a.x / b, a.y / b, a.z / b);
-	};
-	$simpleray_Vector3f.op_Addition = function(a, b) {
-		return new $simpleray_Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
-	};
-	global.simpleray.Vector3f = $simpleray_Vector3f;
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Color
-	var $System_Color = function(a, r, g, b) {
-		this.r = 0;
-		this.g = 0;
-		this.b = 0;
-		this.a = 0;
-		this.a = a;
-		this.r = r;
-		this.g = g;
-		this.b = b;
-	};
-	$System_Color.__typeName = 'System.Color';
-	$System_Color.get_blueViolet = function() {
-		return new $System_Color(255, 138, 43, 226);
-		// #FF8A2BE2
-	};
-	$System_Color.get_aquamarine = function() {
-		return new $System_Color(255, 127, 255, 212);
-		// #FF7FFFD4
-	};
-	$System_Color.fromArgb = function(a, r, g, b) {
-		return new $System_Color(a, r, g, b);
-	};
-	global.System.Color = $System_Color;
-	////////////////////////////////////////////////////////////////////////////////
-	// System.Console
-	var $System_Console = function() {
-	};
-	$System_Console.__typeName = 'System.Console';
-	$System_Console.writeLine = function(msg) {
-		document.getElementById('log').innerHTML += msg + '<br>';
-	};
-	global.System.Console = $System_Console;
+	$$Sphere.__typeName = '$Sphere';
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Drawing.Bitmap
-	var $System_Drawing_Bitmap = function(w, h) {
+	var $Bitmap = function(w, h) {
 		this.$width = 0;
 		this.$height = 0;
 		this.$canvas = null;
@@ -341,27 +232,116 @@
 		this.$imagedata = this.$context.createImageData(w, 1);
 		// w,h
 	};
-	$System_Drawing_Bitmap.__typeName = 'System.Drawing.Bitmap';
-	global.System.Drawing.Bitmap = $System_Drawing_Bitmap;
-	ss.initClass($Missing_Random, $asm, {
-		nextDouble: function() {
-			return this.$mt.genrand_real1();
-		},
-		next: function(maxValue) {
-			var real = this.$mt.genrand_real1();
-			return Math.floor(real * maxValue);
-		}
-	});
-	ss.initClass($Missing_Stopwatch, $asm, {
-		restart: function() {
-			this.$start_time = (new Date()).getTime();
-		},
-		get_elapsedMilliseconds: function() {
-			return (new Date()).getTime() - this.$start_time;
-		}
-	});
-	ss.initClass($simpleray_RTObject, $asm, { intersect: null, getSurfaceNormalAtPoint: null });
-	ss.initClass($simpleray_$Plane, $asm, {
+	$Bitmap.__typeName = 'Bitmap';
+	global.Bitmap = $Bitmap;
+	////////////////////////////////////////////////////////////////////////////////
+	// System.Color
+	var $Color = function(a, r, g, b) {
+		this.r = 0;
+		this.g = 0;
+		this.b = 0;
+		this.a = 0;
+		this.a = a;
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	};
+	$Color.__typeName = 'Color';
+	$Color.get_blueViolet = function() {
+		return new $Color(255, 138, 43, 226);
+		// #FF8A2BE2
+	};
+	$Color.get_aquamarine = function() {
+		return new $Color(255, 127, 255, 212);
+		// #FF7FFFD4
+	};
+	$Color.fromArgb = function(a, r, g, b) {
+		return new $Color(a, r, g, b);
+	};
+	global.Color = $Color;
+	////////////////////////////////////////////////////////////////////////////////
+	// System.Console
+	var $Console = function() {
+	};
+	$Console.__typeName = 'Console';
+	$Console.writeLine = function(msg) {
+		document.getElementById('log').innerHTML += msg + '<br>';
+	};
+	global.Console = $Console;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Light
+	var $Light = function(p) {
+		this.position = null;
+		this.position = p;
+	};
+	$Light.__typeName = 'Light';
+	global.Light = $Light;
+	////////////////////////////////////////////////////////////////////////////////
+	// Missing.Random
+	var $Random = function(seed) {
+		this.$mt = null;
+		this.$mt = new MersenneTwister(seed);
+	};
+	$Random.__typeName = 'Random';
+	global.Random = $Random;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Ray
+	var $Ray = function(o, d) {
+		this.origin = null;
+		this.direction = null;
+		this.closestHitObject = null;
+		this.closestHitDistance = 0;
+		this.hitPoint = null;
+		this.origin = o;
+		this.direction = d;
+		this.closestHitDistance = $Ray.worlD_MAX;
+		this.closestHitObject = null;
+	};
+	$Ray.__typeName = 'Ray';
+	global.Ray = $Ray;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.RTObject
+	var $RTObject = function() {
+		this.color = null;
+	};
+	$RTObject.__typeName = 'RTObject';
+	global.RTObject = $RTObject;
+	////////////////////////////////////////////////////////////////////////////////
+	// Missing.Stopwatch
+	var $Stopwatch = function() {
+		this.$start_time = 0;
+	};
+	$Stopwatch.__typeName = 'Stopwatch';
+	global.Stopwatch = $Stopwatch;
+	////////////////////////////////////////////////////////////////////////////////
+	// simpleray.Vector3f
+	var $Vector3f = function(x, y, z) {
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	};
+	$Vector3f.__typeName = 'Vector3f';
+	$Vector3f.op_Subtraction = function(a, b) {
+		return new $Vector3f(a.x - b.x, a.y - b.y, a.z - b.z);
+	};
+	$Vector3f.op_UnaryNegation = function(a) {
+		return new $Vector3f(-a.x, -a.y, -a.z);
+	};
+	$Vector3f.op_Multiply = function(a, b) {
+		return new $Vector3f(a.x * b, a.y * b, a.z * b);
+	};
+	$Vector3f.op_Division = function(a, b) {
+		return new $Vector3f(a.x / b, a.y / b, a.z / b);
+	};
+	$Vector3f.op_Addition = function(a, b) {
+		return new $Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
+	};
+	global.Vector3f = $Vector3f;
+	ss.initClass($RTObject, $asm, { intersect: null, getSurfaceNormalAtPoint: null });
+	ss.initClass($$Plane, $asm, {
 		intersect: function(ray) {
 			var normalDotRayDir = this.$normal.dot(ray.direction);
 			if (normalDotRayDir === 0) {
@@ -381,11 +361,11 @@
 			return this.$normal;
 			// This is of course the same across the entire plane
 		}
-	}, $simpleray_RTObject);
-	ss.initClass($simpleray_$RayTracer, $asm, {});
-	ss.initClass($simpleray_$Sphere, $asm, {
+	}, $RTObject);
+	ss.initClass($$RayTracer, $asm, {});
+	ss.initClass($$Sphere, $asm, {
 		intersect: function(ray) {
-			var lightFromOrigin = $simpleray_Vector3f.op_Subtraction(this.$position, ray.origin);
+			var lightFromOrigin = $Vector3f.op_Subtraction(this.$position, ray.origin);
 			// dir from origin to us
 			var v = lightFromOrigin.dot(ray.direction);
 			// cos of angle between dirs from origin to us and from origin to where the ray's pointing
@@ -403,35 +383,12 @@
 			}
 		},
 		getSurfaceNormalAtPoint: function(p) {
-			var normal = $simpleray_Vector3f.op_Subtraction(p, this.$position);
+			var normal = $Vector3f.op_Subtraction(p, this.$position);
 			normal.normalise();
 			return normal;
 		}
-	}, $simpleray_RTObject);
-	ss.initClass($simpleray_Light, $asm, {});
-	ss.initClass($simpleray_Ray, $asm, {});
-	ss.initClass($simpleray_Vector3f, $asm, {
-		dot: function(b) {
-			return this.x * b.x + this.y * b.y + this.z * b.z;
-		},
-		normalise: function() {
-			var f = 1 / Math.sqrt(this.dot(this));
-			this.x *= f;
-			this.y *= f;
-			this.z *= f;
-		},
-		magnitude: function() {
-			return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-		},
-		reflectIn: function(normal) {
-			var negVector = $simpleray_Vector3f.op_UnaryNegation(this);
-			var reflectedDir = $simpleray_Vector3f.op_Subtraction($simpleray_Vector3f.op_Multiply(normal, 2 * negVector.dot(normal)), negVector);
-			return reflectedDir;
-		}
-	});
-	ss.initClass($System_Color, $asm, {});
-	ss.initClass($System_Console, $asm, {});
-	ss.initClass($System_Drawing_Bitmap, $asm, {
+	}, $RTObject);
+	ss.initClass($Bitmap, $asm, {
 		setPixel: function(x, y, c) {
 			var index = x * 4;
 			this.$imagedata.data[index + 0] = c.r;
@@ -447,30 +404,71 @@
 			// ignored
 		}
 	});
-	$simpleray_Ray.worlD_MAX = 1000;
-	$simpleray_$RayTracer.$PI = 3.14159274101257;
-	$simpleray_$RayTracer.$pI_X_2 = 6.28318548202515;
-	$simpleray_$RayTracer.$pI_OVER_2 = 1.57079637050629;
-	$simpleray_$RayTracer.$canvaS_WIDTH = 640;
-	$simpleray_$RayTracer.$canvaS_HEIGHT = 480;
-	$simpleray_$RayTracer.$TINY = 9.99999974737875E-05;
-	$simpleray_$RayTracer.$maX_DEPTH = 3;
-	$simpleray_$RayTracer.$materiaL_DIFFUSE_COEFFICIENT = 0.5;
-	$simpleray_$RayTracer.$materiaL_REFLECTION_COEFFICIENT = 0.5;
-	$simpleray_$RayTracer.$materiaL_SPECULAR_COEFFICIENT = 2;
-	$simpleray_$RayTracer.$materiaL_SPECULAR_POWER = 50;
-	$simpleray_$RayTracer.$bG_COLOR = $System_Color.get_blueViolet();
-	$simpleray_$RayTracer.$eyePos = new $simpleray_Vector3f(0, 0, -5);
-	$simpleray_$RayTracer.$screenTopLeftPos = new $simpleray_Vector3f(-6, 4, 0);
-	$simpleray_$RayTracer.$screenBottomRightPos = new $simpleray_Vector3f(6, -4, 0);
-	$simpleray_$RayTracer.$pixelWidth = 0;
-	$simpleray_$RayTracer.$pixelHeight = 0;
-	$simpleray_$RayTracer.$objects = null;
-	$simpleray_$RayTracer.$lights = null;
-	$simpleray_$RayTracer.$random = null;
-	$simpleray_$RayTracer.$stopwatch = null;
-	$simpleray_$RayTracer.$minSpeed = Number.MAX_VALUE;
-	$simpleray_$RayTracer.$maxSpeed = -Number.MAX_VALUE;
-	$simpleray_$RayTracer.$speedSamples = null;
-	$simpleray_$RayTracer.$main();
+	ss.initClass($Color, $asm, {});
+	ss.initClass($Console, $asm, {});
+	ss.initClass($Light, $asm, {});
+	ss.initClass($Random, $asm, {
+		nextDouble: function() {
+			return this.$mt.genrand_real1();
+		},
+		next: function(maxValue) {
+			var real = this.$mt.genrand_real1();
+			return Math.floor(real * maxValue);
+		}
+	});
+	ss.initClass($Ray, $asm, {});
+	ss.initClass($Stopwatch, $asm, {
+		restart: function() {
+			this.$start_time = (new Date()).getTime();
+		},
+		get_elapsedMilliseconds: function() {
+			return (new Date()).getTime() - this.$start_time;
+		}
+	});
+	ss.initClass($Vector3f, $asm, {
+		dot: function(b) {
+			return this.x * b.x + this.y * b.y + this.z * b.z;
+		},
+		normalise: function() {
+			var f = 1 / Math.sqrt(this.dot(this));
+			this.x *= f;
+			this.y *= f;
+			this.z *= f;
+		},
+		magnitude: function() {
+			return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+		},
+		reflectIn: function(normal) {
+			var negVector = $Vector3f.op_UnaryNegation(this);
+			var reflectedDir = $Vector3f.op_Subtraction($Vector3f.op_Multiply(normal, 2 * negVector.dot(normal)), negVector);
+			return reflectedDir;
+		}
+	});
+	$Ray.worlD_MAX = 1000;
+	$$RayTracer.$PI = 3.14159274101257;
+	$$RayTracer.$pI_X_2 = 6.28318548202515;
+	$$RayTracer.$pI_OVER_2 = 1.57079637050629;
+	$$RayTracer.$canvaS_WIDTH = 640;
+	$$RayTracer.$canvaS_HEIGHT = 480;
+	$$RayTracer.$TINY = 9.99999974737875E-05;
+	$$RayTracer.$maX_DEPTH = 3;
+	$$RayTracer.$materiaL_DIFFUSE_COEFFICIENT = 0.5;
+	$$RayTracer.$materiaL_REFLECTION_COEFFICIENT = 0.5;
+	$$RayTracer.$materiaL_SPECULAR_COEFFICIENT = 2;
+	$$RayTracer.$materiaL_SPECULAR_POWER = 50;
+	$$RayTracer.$bG_COLOR = $Color.get_blueViolet();
+	$$RayTracer.$eyePos = new $Vector3f(0, 0, -5);
+	$$RayTracer.$screenTopLeftPos = new $Vector3f(-6, 4, 0);
+	$$RayTracer.$screenBottomRightPos = new $Vector3f(6, -4, 0);
+	$$RayTracer.$pixelWidth = 0;
+	$$RayTracer.$pixelHeight = 0;
+	$$RayTracer.$objects = null;
+	$$RayTracer.$lights = null;
+	$$RayTracer.$random = null;
+	$$RayTracer.$stopwatch = null;
+	$$RayTracer.$minSpeed = Number.MAX_VALUE;
+	$$RayTracer.$maxSpeed = -Number.MAX_VALUE;
+	$$RayTracer.$totalTime = 0;
+	$$RayTracer.$speedSamples = null;
+	$$RayTracer.$main();
 })();

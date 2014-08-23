@@ -219,6 +219,7 @@ namespace simpleray {
         
         static Stopwatch stopwatch;        
         static double minSpeed = double.MaxValue, maxSpeed = double.MinValue;
+        static double totalTime = 0;
         static List<double> speedSamples;
 
         //static void Main(string[] args) {
@@ -232,7 +233,8 @@ namespace simpleray {
             Bitmap canvas = new Bitmap(CANVAS_WIDTH, CANVAS_HEIGHT);
            
             // add some objects
-            for (int i = 0; i < 30; i++) {
+            // in the original test it was 30 and not 300
+            for (int i = 0; i < 300; i++) {
                 float x = (float)(random.NextDouble() * 10.0f) - 5.0f;          // Range -5 to 5
                 float y = (float)(random.NextDouble() * 10.0f) - 5.0f;          // Range -5 to 5
                 float z = (float)(random.NextDouble() * 10.0f);                 // Range 0 to 10
@@ -278,6 +280,7 @@ namespace simpleray {
             //canvas.Refresh(); // added for make it work with Saltarelle
             var elapsed = stopwatch.ElapsedMilliseconds;
             double msPerPixel = (double)elapsed / CANVAS_WIDTH;
+            totalTime+=elapsed;
             
             ReportSpeed(msPerPixel);
             
@@ -297,8 +300,8 @@ namespace simpleray {
           average /= speedSamples.Count;
           
           WriteSpeedText(String.Format(
-            "min: {0:F3} ms/pixel, max: {1:F3} ms/pixel, avg: {2:F3} ms/pixel",
-            minSpeed, maxSpeed, average
+            "min: {0} ms/pixel, max: {1} ms/pixel, avg: {2} ms/pixel, total: {3} ms",
+            minSpeed, maxSpeed, average, totalTime
           ));
         }
         
@@ -315,7 +318,7 @@ namespace simpleray {
         }
 
         // Given a ray with origin and direction set, fill in the intersection info
-        static void CheckIntersection(ref Ray ray) {
+        static void CheckIntersection(/*ref*/ Ray ray) {
             foreach (RTObject obj in objects) {                     // loop through objects, test for intersection
                 float hitDistance = obj.Intersect(ray);             // check for intersection with this object and find distance
                 if (hitDistance < ray.closestHitDistance && hitDistance > 0) {
@@ -347,7 +350,7 @@ namespace simpleray {
         // (handles reflections recursively)
         static Color Trace(Ray ray, int traceDepth) {
             // See if the ray intersected an object
-            CheckIntersection(ref ray);
+            CheckIntersection(/*ref*/ ray);
             if (ray.closestHitDistance >= Ray.WORLD_MAX || ray.closestHitObject == null) // No intersection
                 return BG_COLOR;
             
@@ -375,7 +378,7 @@ namespace simpleray {
                 // NB: Step out slightly from the hitpoint first
                 Ray shadowRay = new Ray(ray.hitPoint + (lightDir * TINY), lightDir);
                 shadowRay.closestHitDistance = lightDistance;           // IMPORTANT: We only want it to trace as far as the light!
-                CheckIntersection(ref shadowRay);
+                CheckIntersection(/*ref*/ shadowRay);
                 if (shadowRay.closestHitObject != null)                 // We hit something -- ignore this light entirely
                     continue;
 
